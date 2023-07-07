@@ -110,5 +110,33 @@ export enum UserColor {
   PORCELAIN = "PORCELAIN",
 }
 
+export type CommentType = {
+  media: null;
+  id: string;
+  user_id: string;
+  post_id: string;
+  content: string;
+  is_edited: boolean;
+  parent_id: null;
+  replies_count: number;
+  likes_count: number;
+  created_at: number;
+  updated_at: number;
+};
+
+export interface TagsProps {
+  tags: string[];
+}
+
+export interface CarouselProps {
+  images?: PostImage[] | null | any;
+}
+
+export interface CommentProps {
+  comment: CommentType;
+  otherUsers: { [key: string]: UserFeed };
+}
+
 export type UsersResponse = ApiResponse["users"];
 export type dataResponse = ApiResponse["data"];
+export type dataImageResponse = dataResponse["images"];

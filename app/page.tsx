@@ -1,21 +1,6 @@
-"use client";
-import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ApiResponse, UserFeed, dataResponse } from "@/types";
-
-type Comment = {
-  media: null;
-  id: string;
-  user_id: string;
-  post_id: string;
-  content: string;
-  is_edited: boolean;
-  parent_id: null;
-  replies_count: number;
-  likes_count: number;
-  created_at: number;
-  updated_at: number;
-};
+import { Carousel, Comment, TruncatedText, Tags } from "@/components";
+import { ApiResponse, UserFeed, dataResponse, CommentType } from "@/types";
 
 export const getPostData = async (): Promise<{
   props: { post: ApiResponse };
@@ -34,66 +19,35 @@ export const getPostData = async (): Promise<{
 };
 
 export const getCommentsData = async (): Promise<{
-  comments: Comment[];
+  comments: CommentType[];
 }> => {
   const response = await fetch(
     "https://api.quriverse.com/api/public-base/posts/eb2f99e2-3940-4d4a-998c-55d1a6c3e0bc/comments",
     { cache: "no-store" }
   );
-  const comments: Comment[] = await response.json();
+  const comments: CommentType[] = await response.json();
 
   return {
     comments,
   };
 };
 
-export default function Home() {
-  const [isTruncated, setIsTruncated] = useState(true);
-  const [post, setPost] = useState<ApiResponse | null>(null);
-  const [comments, setComments] = useState<any | undefined>();
-
-  useEffect(() => {
-    (async () => {
-      const posts_response = await getPostData();
-      const comments_response = await getCommentsData();
-      setPost(posts_response.props.post);
-      console.log("DATA: ", comments_response.comments);
-      setComments(comments_response.comments);
-    })();
-  }, []);
-
-  const truncateText = (text: string, limit: number) => {
-    if (text.length <= limit) {
-      return text;
-    }
-    return text.slice(0, limit);
-  };
-
-  if (!post || !comments) {
-    return (
-      <div className="h-screen mx-auto flex items-center justify-between bg-[#1e1e1e]">
-        <p className="w-full text-center text-[#EEFFEF]">Loading...</p>
-      </div>
-    );
-  }
-
+export default async function Home() {
   const {
-    data,
-    users,
-  }: { data: dataResponse; users: Record<string, UserFeed> } = post;
+    props: {
+      post: { data, users },
+    },
+  } = await getPostData();
+  const { comments }: any = await getCommentsData();
 
-  const commentsData: any = comments?.data;
-  const otherUsers: any = comments?.users;
-
-  console.log("Comments: ", commentsData);
-  console.log("Other users: ", otherUsers);
+  const commentsData: CommentType[] = comments?.data;
+  const otherUsers: { [key: string]: UserFeed } = comments?.users;
 
   const {
     user_id,
     content,
     tags,
     images,
-    id,
     likes_count,
     comments_count,
     quotes_count,
@@ -109,7 +63,7 @@ export default function Home() {
             <div className="flex gap-[12px] items-center">
               <div className="border border-[1.54px] border-[#FF8A59] md:border-[#FFE162] rounded-[15.4px] w-[55.43px] h-[55.43px] p-[4.62px]">
                 <Image
-                  src="https://cdn.quriverse.com/images/thumbnails/ebe4f871-72c5-453f-bc95-9f8486a197fe"
+                  src={userData.image_url.thumbnail}
                   className="rounded-[9.24px]"
                   width={43.12}
                   height={43.12}
@@ -147,58 +101,13 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative h-[338px] w-full mb-[15.91px]">
-            <img
-              src="https://cdn.quriverse.com/images/15c76ce9-d846-404f-95c2-2b69825646c0"
-              alt="Image"
-              className="h-full w-full object-cover"
-            />
-            <div className="hidden md:flex mt-[15.91px] gap-[3.98px] justify-center">
-              <img src="/assets/carousal-rectangle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-            </div>
-            <div className="md:hidden flex mt-[15.91px] gap-[3.98px] justify-center absolute bottom-0 w-full p-2">
-              <img src="/assets/carousal-rectangle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-              <img src="/assets/carousal-circle.svg" />
-            </div>
-          </div>
+          <Carousel images={images} />
 
           <div className="mt-[16.03px] w-full px-[28px]">
-            <p className="text-[20px] text-[#EEFFEF] font-medium w-full">
-              {isTruncated ? truncateText(content ?? "", 50) : content}
-              {isTruncated ? (
-                <span
-                  className="text-[#AAAAAA] cursor-pointer"
-                  onClick={() => setIsTruncated((toggle) => !toggle)}
-                >
-                  ...Show more
-                </span>
-              ) : (
-                <span
-                  className="text-[#AAAAAA] cursor-pointer"
-                  onClick={() => setIsTruncated((toggle) => !toggle)}
-                >
-                  ...Show less
-                </span>
-              )}
-            </p>
+            <TruncatedText content={content} />
           </div>
           <div className="mt-[13px] flex gap-[20px] px-[28px] w-full flex-wrap">
-            {tags &&
-              tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="p-[14.5px] md:p-[16.7px] rounded-[13.4px] bg-[#222222] text-[#aaaaaa]"
-                >
-                  <p>#{tag}</p>
-                </span>
-              ))}
+            <Tags tags={tags} />
           </div>
           <div className="flex justify-between mt-[20px] px-[28px]">
             <div className="flex gap-[40px] ">
@@ -291,89 +200,15 @@ export default function Home() {
           <div className="flex items-center mt-[40px] px-[28px]">
             <span>
               <p className="tracking-[4.2px] text-[#FFE162] font-extrabold text-[11.64px] md:text-[14px] w-40">
-                {comments_count} COMMENTS
+                {commentsData.length} COMMENTS
               </p>
             </span>
             <span className="border-b-2 border-[#757575] w-full"></span>
           </div>
           <div className="flex flex-col gap-[24px] px-[28px] py-[24px]">
             {commentsData.length > 0 &&
-              commentsData?.map((comment: Comment) => {
-                return (
-                  <div className="flex gap-[6.6px]">
-                    <div className="border border-[1.54px] border-[#FFE162] rounded-[5.94px] w-[40px] h-[35px] p-[2.97px] self-start flex items-center">
-                      <Image
-                        src={otherUsers[comment.user_id].image_url.thumbnail}
-                        className="rounded-[9.9px]"
-                        width={40}
-                        height={35}
-                        alt="user-img"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex h-[35px] self-start">
-                        <p className="flex items-center gap-1.5 text-[#FFE162] text-[14.55px] md:text-[14px] font-semibold">
-                          {otherUsers[comment.user_id].username}
-                          <span className="text-[#AAAAAA] font-medium">
-                            <span className="md:hidden inline"> • </span>
-                            {10}
-                            <span className="md:inline hidden">min</span>
-                            <span className="inline md:hidden">m</span>
-                          </span>
-                        </p>
-                      </div>
-                      <p className="text-[#EEFFEF] text-[14.55px] md:text-[16px] w-full">
-                        {comment.content}
-                      </p>
-                      <div className="flex gap-[33px] mt-[24px]">
-                        <div className="flex gap-2 items-center">
-                          <div className="h-[23.3px] w-[23.3px] md:w-[19.8px] md:h-[19.8px] cursor-pointer">
-                            <svg
-                              width="23"
-                              height="24"
-                              viewBox="0 0 23 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M17.4 6.49985H19.6C20.815 6.49985 21.8 7.48483 21.8 8.69985V15.2999C21.8 16.5149 20.815 17.4999 19.6 17.4999H17.4V21.8999L13 17.4999H8.6C7.99249 17.4999 7.44249 17.2536 7.04436 16.8555M7.04436 16.8555L10.8 13.0999H15.2C16.415 13.0999 17.4 12.1149 17.4 10.8999V4.29985C17.4 3.08483 16.415 2.09985 15.2 2.09985H4.2C2.98497 2.09985 2 3.08483 2 4.29985V10.8999C2 12.1149 2.98497 13.0999 4.2 13.0999H6.4V17.4999L7.04436 16.8555Z"
-                                stroke="#DDDDDD"
-                                strokeWidth="2.31"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <p className="text-[#AAAAAA] text-[16.5px] font-medium">
-                            {comment.replies_count}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 items-center">
-                          <div className="h-[23.3px] w-[23.3px] md:w-[19.8px] md:h-[16.9px] cursor-pointer">
-                            <svg
-                              width="23"
-                              height="20"
-                              viewBox="0 0 23 20"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M3.34978 3.09985C1.41669 5.03294 1.41669 8.16711 3.34978 10.1002L11.8 18.5504L20.2501 10.1002C22.1832 8.16711 22.1832 5.03294 20.2501 3.09985C18.317 1.16675 15.1829 1.16675 13.2498 3.09985L11.8 4.54973L10.3501 3.09985C8.41705 1.16675 5.28288 1.16675 3.34978 3.09985Z"
-                                stroke="#DDDDDD"
-                                strokeWidth="2.31"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </div>
-                          <p className="text-[#AAAAAA] text-[16.5px] font-medium">
-                            {comment.likes_count}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
+              commentsData?.map((comment: CommentType) => {
+                return <Comment comment={comment} otherUsers={otherUsers} />;
               })}
           </div>
         </section>
