@@ -15,9 +15,9 @@ export const Carousel = ({ images }: CarouselProps) => {
         {images &&
           Array.from({ length: images.length }, (value, index) =>
             index === activeImage ? (
-              <img src="/assets/carousal-rectangle.svg" />
+              <img key={index} src="/assets/carousal-rectangle.svg" />
             ) : (
-              <img src="/assets/carousal-circle.svg" />
+              <img key={index} src="/assets/carousal-circle.svg" />
             )
           )}
       </div>
@@ -25,9 +25,10 @@ export const Carousel = ({ images }: CarouselProps) => {
         {images &&
           Array.from({ length: images.length }, (value, index) =>
             index === activeImage ? (
-              <img src="/assets/carousal-rectangle.svg" />
+              <img key={index} src="/assets/carousal-rectangle.svg" />
             ) : (
               <img
+                key={index}
                 src="/assets/carousal-circle.svg"
                 onClick={() => setActiveImage(index)}
               />
