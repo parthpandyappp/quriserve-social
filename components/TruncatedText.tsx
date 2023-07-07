@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { truncateText } from "@/utils";
 
 type TruncatedTextProps = {
   content: string | null;
@@ -7,13 +8,6 @@ type TruncatedTextProps = {
 
 const TruncatedText = ({ content }: TruncatedTextProps) => {
   const [isTruncated, setIsTruncated] = useState(true);
-
-  const truncateText = (text: string, limit: number) => {
-    if (text.length <= limit) {
-      return text;
-    }
-    return text.slice(0, limit);
-  };
 
   return (
     <p className="text-[20px] text-[#EEFFEF] font-medium w-full">
