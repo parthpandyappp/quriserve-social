@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Carousel, Comment, TruncatedText, Tags } from "@/components";
 import { ApiResponse, UserFeed, dataResponse, CommentType } from "@/types";
 
-export const getPostData = async (): Promise<{
+const getPostData = async (): Promise<{
   props: { post: ApiResponse };
 }> => {
   const response = await fetch(
@@ -18,7 +18,7 @@ export const getPostData = async (): Promise<{
   };
 };
 
-export const getCommentsData = async (): Promise<{
+const getCommentsData = async (): Promise<{
   comments: CommentType[];
 }> => {
   const response = await fetch(
